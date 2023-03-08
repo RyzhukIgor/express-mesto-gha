@@ -24,7 +24,6 @@ app.use((req, res, next) => {
   req.user = {
     _id: '640713b70310ec8e892e7d3e',
   };
-
   next();
 });
 app.use('/', router);
