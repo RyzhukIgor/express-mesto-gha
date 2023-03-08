@@ -13,14 +13,23 @@ mongoose.connect('mongodb://127.0.0.1:27017/mestodb')
     console.log('Connected');
   })
   .catch((err) => {
+    // eslint-disable-next-line no-console
     console.error(err);
   });
 
 // подключаем мидлвары, роуты и всё остальное...
 
 app.use(bodyParser.json());
+app.use((req, res, next) => {
+  req.user = {
+    _id: '640713b70310ec8e892e7d3e',
+  };
+
+  next();
+});
 app.use('/', router);
 
 app.listen(PORT, () => {
+  // eslint-disable-next-line no-console
   console.log(`Listing on port ${PORT}`);
 });
