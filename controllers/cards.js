@@ -35,7 +35,7 @@ module.exports.deleteCard = (req, res) => {
       throw new ErrorNotFound('NotFound');
     })
     .then((result) => {
-      console.log(result);
+      res.send(result);
     })
     .catch((error) => {
       if (error.name === 'CastError') {

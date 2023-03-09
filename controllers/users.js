@@ -18,10 +18,15 @@ module.exports.getUsers = (req, res) => {
 module.exports.getUserId = (req, res) => {
   const { userId } = req.params;
   User.findById(userId)
-    .orFail(() => {
-      throw new ErrorNotFound('NotFound');
+    .then((user) => {
+      if (!user) {
+        res.status(ERROR_NOT_FOUND).send({
+          message: 'Пользователь с указанным id не найден',
+        });
+      } else {
+        res.status(STATUS_OK).send({ data: user });
+      }
     })
-    .then((user) => res.status(STATUS_OK).send({ data: user }))
     .catch((error) => {
       if (error.name === 'CastError') {
         res.status(ERROR_BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
