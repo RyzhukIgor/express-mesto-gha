@@ -3,6 +3,8 @@ const User = require('../models/user');
 const ErrorNotFound = require('../utils/ErrorNotFound');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const bcrypt = require('bcryptjs');
+// eslint-disable-next-line import/no-extraneous-dependencies
+const jwt = require('jsonwebtoken');
 
 const {
   ERROR_BAD_REQUEST,
@@ -10,6 +12,7 @@ const {
   ERROR_INTERNAL_SERVER,
   STATUS_CREATED,
   STATUS_OK,
+  UNAUTH_ERR,
 } = require('../utils/errors');
 
 module.exports.getUsers = (req, res) => {
@@ -99,4 +102,18 @@ module.exports.updateAvatar = (req, res) => {
         res.status(ERROR_INTERNAL_SERVER).send({ message: 'Внутрення ошибка сервера' });
       }
     });
+};
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign(
+        { _id: user._id },
+        'some-secret-key',
+        { expiresIn: '7d' },
+      );
+      res.send({ token });
+    })
+    .catch(() => res.status(UNAUTH_ERR).send({ message: 'Не действительны учётные данные' }));
 };
