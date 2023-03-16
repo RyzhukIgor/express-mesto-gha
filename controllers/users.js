@@ -1,5 +1,8 @@
+/* eslint-disable import/order */
 const User = require('../models/user');
 const ErrorNotFound = require('../utils/ErrorNotFound');
+// eslint-disable-next-line import/no-extraneous-dependencies
+const bcrypt = require('bcryptjs');
 
 const {
   ERROR_BAD_REQUEST,
@@ -41,8 +44,13 @@ module.exports.getUserId = (req, res) => {
 };
 
 module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      name, about, avatar, email, password: hash,
+    }))
     .then((newUser) => res.status(STATUS_CREATED).send({ data: newUser }))
     .catch((error) => {
       if (error.name === 'ValidationError') {
