@@ -115,5 +115,5 @@ module.exports.login = (req, res) => {
       );
       res.send({ token });
     })
-    .catch(() => res.status(UNAUTH_ERR).send({ message: 'Не действительны учётные данные' }));
+    .catch((error) => console.log(error));
 };
