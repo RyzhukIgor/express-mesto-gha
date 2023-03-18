@@ -115,5 +115,28 @@ module.exports.login = (req, res) => {
       );
       res.send({ token });
     })
-    .catch((error) => console.log(error));
+    .catch(() => res.status(UNAUTH_ERR).send({ message: 'Не действительны учётные данные' }));
+};
+
+module.exports.getInfoUser = (req, res) => {
+  const userId = req.user._id;
+  User.findById(userId)
+    .then((user) => {
+      if (user) {
+        res.send({ data: user });
+      } else {
+        throw new ErrorNotFound('NotFound');
+      }
+    })
+    .catch((error) => {
+      if (error.name === 'CastError') {
+        res.status(ERROR_BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
+      } else if (error.message === 'NotFound') {
+        res.status(ERROR_NOT_FOUND).send({
+          message: 'Пользователь с указанным id не найден',
+        });
+      } else {
+        res.status(ERROR_INTERNAL_SERVER).send({ message: 'Внутрення ошибка сервера' });
+      }
+    });
 };
