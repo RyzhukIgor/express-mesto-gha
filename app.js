@@ -24,12 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.post('/signin', login);
 app.post('/signup', createUser);
-app.use((req, res, next) => {
-  req.user = {
-    _id: '640713b70310ec8e892e7d3e',
-  };
-  next();
-});
+app.use(auth);
 app.use('/', router);
 
 app.listen(PORT, () => {
