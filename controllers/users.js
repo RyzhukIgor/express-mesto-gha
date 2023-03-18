@@ -55,7 +55,7 @@ module.exports.createUser = (req, res, next) => {
     .then((hash) => User.create({
       name, about, avatar, email, password: hash,
     }))
-    .then((newUser) => res.status(STATUS_CREATED).send({ data: newUser }))
+    .then(() => res.status(STATUS_CREATED).send({ message: 'Пользователь создан' }))
     .catch((error) => {
       if (error.code === 11000) {
         next(new ConflictUserErr('Аккаунт с данным email зарегистрирован'));
