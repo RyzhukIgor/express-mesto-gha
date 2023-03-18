@@ -27,6 +27,16 @@ app.post('/signup', createUser);
 app.use(auth);
 app.use('/', router);
 
+app.use((err, req, res, next) => {
+  const { statusCode = 500 } = err;
+  if (statusCode === 500) {
+    res.status(500).send({ message: 'Внутренняя ошибка сервере' });
+    next();
+  } else {
+    res.status(statusCode).send({ message: err.message });
+    next();
+  }
+});
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`Listing on port ${PORT}`);

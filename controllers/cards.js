@@ -1,21 +1,23 @@
+// eslint-disable-next-line no-unused-vars
+const mongoose = require('mongoose');
 const Card = require('../models/card');
 const ErrorNotFound = require('../utils/ErrorNotFound');
 
 const {
   ERROR_BAD_REQUEST,
   ERROR_NOT_FOUND,
-  ERROR_INTERNAL_SERVER,
   STATUS_CREATED,
   STATUS_OK,
+  FORBIDDEN_ERR,
 } = require('../utils/errors');
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.send({ data: cards }))
-    .catch(() => res.status(ERROR_INTERNAL_SERVER).send({ message: 'Внутренняя ошибка сервера' }));
+    .catch((error) => next(error));
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   Card.create({ name, link, owner: req.user._id })
     .then((newCard) => res.status(STATUS_CREATED).send(newCard))
@@ -23,19 +25,26 @@ module.exports.createCard = (req, res) => {
       if (error.name === 'ValidationError') {
         res.status(ERROR_BAD_REQUEST).send({ message: 'Переданы некорректные данные пользователя' });
       } else {
-        res.status(ERROR_INTERNAL_SERVER).send({ message: 'Внутрення ошибка сервера' });
+        next(error);
       }
     });
 };
 
-module.exports.deleteCard = (req, res) => {
+module.exports.deleteCard = (req, res, next) => {
   const { cardId } = req.params;
+  const { userId } = req.user._id;
   Card.findByIdAndDelete(cardId)
     .orFail(() => {
       throw new ErrorNotFound('NotFound');
     })
-    .then((result) => {
-      res.send(result);
+    .then((card) => {
+      const ownerId = card.owner.id;
+      if (ownerId !== userId) {
+        res.status(FORBIDDEN_ERR).send({ message: 'Вы не можете удалить эту карточку' });
+      } else {
+        card.remove();
+        res.send({ data: card });
+      }
     })
     .catch((error) => {
       if (error.name === 'CastError') {
@@ -45,12 +54,12 @@ module.exports.deleteCard = (req, res) => {
           message: 'Пользователь с указанным id не найден',
         });
       } else {
-        res.status(ERROR_INTERNAL_SERVER).send({ message: 'Внутрення ошибка сервера' });
+        next(error);
       }
     });
 };
 
-module.exports.likeCard = (req, res) => {
+module.exports.likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
@@ -68,12 +77,12 @@ module.exports.likeCard = (req, res) => {
           message: 'Пользователь с указанным id не найден',
         });
       } else {
-        res.status(ERROR_INTERNAL_SERVER).send({ message: 'Внутрення ошибка сервера' });
+        next(error);
       }
     });
 };
 
-module.exports.dislikeCard = (req, res) => {
+module.exports.dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
@@ -91,7 +100,7 @@ module.exports.dislikeCard = (req, res) => {
           message: 'Пользователь с указанным id не найден',
         });
       } else {
-        res.status(ERROR_INTERNAL_SERVER).send({ message: 'Внутрення ошибка сервера' });
+        next(error);
       }
     });
 };

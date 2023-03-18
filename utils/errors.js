@@ -4,6 +4,8 @@ const ERROR_INTERNAL_SERVER = 500;
 const STATUS_CREATED = 201;
 const STATUS_OK = 200;
 const UNAUTH_ERR = 401;
+const FORBIDDEN_ERR = 403;
+const CONFLICT_ERR = 409;
 
 module.exports = {
   ERROR_BAD_REQUEST,
@@ -12,4 +14,6 @@ module.exports = {
   STATUS_CREATED,
   STATUS_OK,
   UNAUTH_ERR,
+  FORBIDDEN_ERR,
+  CONFLICT_ERR,
 };

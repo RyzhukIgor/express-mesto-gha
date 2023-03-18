@@ -5,23 +5,24 @@ const ErrorNotFound = require('../utils/ErrorNotFound');
 const bcrypt = require('bcryptjs');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const jwt = require('jsonwebtoken');
+// eslint-disable-next-line no-unused-vars
+const mongoose = require('mongoose');
+const ConflictUserErr = require('../utils/ConflictUserErr');
 
 const {
   ERROR_BAD_REQUEST,
   ERROR_NOT_FOUND,
-  ERROR_INTERNAL_SERVER,
   STATUS_CREATED,
   STATUS_OK,
-  UNAUTH_ERR,
 } = require('../utils/errors');
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((u) => res.send({ data: u }))
-    .catch(() => res.status(ERROR_INTERNAL_SERVER).send({ message: 'Пользователи не найдены' }));
+    .catch((error) => next(error));
 };
 
-module.exports.getUserId = (req, res) => {
+module.exports.getUserId = (req, res, next) => {
   const { userId } = req.params;
   User.findById(userId)
     .then((user) => {
@@ -41,12 +42,12 @@ module.exports.getUserId = (req, res) => {
           message: 'Пользователь с указанным id не найден',
         });
       } else {
-        res.status(ERROR_INTERNAL_SERVER).send({ message: 'Внутрення ошибка сервера' });
+        next(error);
       }
     });
 };
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
@@ -56,15 +57,17 @@ module.exports.createUser = (req, res) => {
     }))
     .then((newUser) => res.status(STATUS_CREATED).send({ data: newUser }))
     .catch((error) => {
-      if (error.name === 'ValidationError') {
+      if (error.code === 11000) {
+        next(new ConflictUserErr('Аккаунт с данным email зарегистрирован'));
+      } else if (error.name === 'ValidationError') {
         res.status(ERROR_BAD_REQUEST).send({ message: 'Переданы некорректные данные пользователя' });
       } else {
-        res.status(ERROR_INTERNAL_SERVER).send({ message: 'Внутрення ошибка сервера' });
+        next(error);
       }
     });
 };
 
-module.exports.updateUser = (req, res) => {
+module.exports.updateUser = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .orFail(() => {
@@ -79,12 +82,12 @@ module.exports.updateUser = (req, res) => {
           message: 'Пользователь с указанным id не найден',
         });
       } else {
-        res.status(ERROR_INTERNAL_SERVER).send({ message: 'Внутрення ошибка сервера' });
+        next(error);
       }
     });
 };
 
-module.exports.updateAvatar = (req, res) => {
+module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .orFail(() => {
@@ -99,12 +102,12 @@ module.exports.updateAvatar = (req, res) => {
           message: 'Пользователь с указанным id не найден',
         });
       } else {
-        res.status(ERROR_INTERNAL_SERVER).send({ message: 'Внутрення ошибка сервера' });
+        next(error);
       }
     });
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
     .then((user) => {
@@ -115,10 +118,10 @@ module.exports.login = (req, res) => {
       );
       res.send({ token });
     })
-    .catch(() => res.status(UNAUTH_ERR).send({ message: 'Не действительны учётные данные' }));
+    .catch((error) => next(error));
 };
 
-module.exports.getInfoUser = (req, res) => {
+module.exports.getInfoUser = (req, res, next) => {
   const userId = req.user._id;
   User.findById(userId)
     .then((user) => {
@@ -136,7 +139,7 @@ module.exports.getInfoUser = (req, res) => {
           message: 'Пользователь с указанным id не найден',
         });
       } else {
-        res.status(ERROR_INTERNAL_SERVER).send({ message: 'Внутрення ошибка сервера' });
+        next(error);
       }
     });
 };
