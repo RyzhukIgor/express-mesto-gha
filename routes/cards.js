@@ -1,6 +1,7 @@
 const router = require('express').Router();
 // eslint-disable-next-line import/no-extraneous-dependencies
 const { Joi, celebrate, errors } = require('celebrate');
+const patternValid = require('../utils/patternValid');
 
 const {
   getCards, createCard, deleteCard, likeCard, dislikeCard,
@@ -10,7 +11,7 @@ router.get('/', getCards);
 router.post('/', celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
-    link: Joi.string().uri(),
+    link: Joi.string().pattern(patternValid),
   }),
 }), createCard);
 router.delete('/:cardId', celebrate({

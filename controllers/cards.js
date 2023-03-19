@@ -34,7 +34,7 @@ module.exports.deleteCard = (req, res, next) => {
   const { userId } = req.user._id;
   Card.findById(cardId)
     .orFail(() => {
-      throw new ErrorNotFound('NotFound');
+      throw new ErrorNotFound('Пользователь не найден');
     })
     .then((card) => {
       const ownerId = card.owner.id;
@@ -61,7 +61,7 @@ module.exports.likeCard = (req, res, next) => {
     { new: true },
   )
     .orFail(() => {
-      throw new ErrorNotFound('NotFound');
+      throw new ErrorNotFound('Пользователь не найден');
     })
     .then((card) => res.status(STATUS_OK).send(card))
     .catch((error) => {
@@ -80,7 +80,7 @@ module.exports.dislikeCard = (req, res, next) => {
     { new: true },
   )
     .orFail(() => {
-      throw new ErrorNotFound('NotFound');
+      throw new ErrorNotFound('Пользователь не найден');
     })
     .then((card) => res.status(200).send(card))
     .catch((error) => {

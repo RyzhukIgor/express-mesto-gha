@@ -5,6 +5,7 @@ const { Joi, celebrate, errors } = require('celebrate');
 const router = require('./routes/index');
 const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
+const patternValid = require('./utils/patternValid');
 
 const app = express();
 const { PORT = 3000 } = process.env;
@@ -30,13 +31,11 @@ app.post('/signin', celebrate({
   }),
 }), login);
 
-// const validUrl = /https?:\/\/w*[-._~:/?#[\]@!$&'()*+,;=0-9a-z]+#?/i;
-
 app.post('/signup', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().uri(), // по рекомендации наставника использовал метод uri()
+    avatar: Joi.string().pattern(patternValid),
     email: Joi.string().required().email(),
     password: Joi.string().required(),
   }),

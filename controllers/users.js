@@ -25,7 +25,7 @@ module.exports.getUserId = (req, res, next) => {
   const { userId } = req.params;
   User.findById(userId)
     .orFail(() => {
-      throw new ErrorNotFound('NotFound');
+      throw new ErrorNotFound('Пользователь не найден');
     })
     .then((user) => {
       res.status(STATUS_OK).send(user);
@@ -63,7 +63,7 @@ module.exports.updateUser = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .orFail(() => {
-      throw new ErrorNotFound('NotFound');
+      throw new ErrorNotFound('Пользователь не найден');
     })
     .then((user) => res.status(STATUS_OK).send({ data: user }))
     .catch((error) => {
@@ -79,7 +79,7 @@ module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .orFail(() => {
-      throw new ErrorNotFound('NotFound');
+      throw new ErrorNotFound('Пользователь не найден');
     })
     .then((user) => res.status(STATUS_OK).send({ data: user }))
     .catch((error) => {
@@ -109,7 +109,7 @@ module.exports.getInfoUser = (req, res, next) => {
   const userId = req.user._id;
   User.findById(userId)
     .orFail(() => {
-      throw new ErrorNotFound('NotFound');
+      throw new ErrorNotFound('Пользователь не найден');
     })
     .then((user) => res.send(user))
     .catch((error) => {

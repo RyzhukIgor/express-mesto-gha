@@ -1,4 +1,5 @@
 const routerUsers = require('express').Router();
+const patternValid = require('../utils/patternValid');
 
 const {
   // eslint-disable-next-line comma-dangle
@@ -22,7 +23,7 @@ routerUsers.patch('/me', celebrate({
 }), updateUser);
 routerUsers.patch('/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().uri(),
+    avatar: Joi.string().pattern(patternValid),
   }),
 }), updateAvatar);
 
