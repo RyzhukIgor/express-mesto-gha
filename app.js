@@ -1,6 +1,5 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const { Joi, celebrate, errors } = require('celebrate');
 const router = require('./routes/index');
@@ -23,18 +22,21 @@ mongoose.connect('mongodb://127.0.0.1:27017/mestodb')
 
 // подключаем мидлвары, роуты и всё остальное...
 app.use(express.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+app.use(express.json());
 app.post('/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required(),
   }),
 }), login);
+
+// const validUrl = /https?:\/\/w*[-._~:/?#[\]@!$&'()*+,;=0-9a-z]+#?/i;
+
 app.post('/signup', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().regex(/https?:\/\/w*[-._~:/?#[\]@!$&'()*+,;=0-9a-z]+#?/i),
+    avatar: Joi.string().uri(), // по рекомендации наставника использовал метод uri()
     email: Joi.string().required().email(),
     password: Joi.string().required(),
   }),
